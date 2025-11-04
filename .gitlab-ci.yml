@@ -1,0 +1,28 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  IMAGE_NAME: registry.gitlab.com/yourusername/resort-website
+  K8S_DEPLOYMENT_FILE: k8s/deployment.yaml
+
+build-job:
+  stage: build
+  script:
+    - echo "Building the Docker image..."
+    - docker build -t abhishek0000111/resortapp:latest .
+
+test-job:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - echo "No test commands defined yet"
+
+deploy-job:
+  stage: deploy
+  script:
+    - echo "Deploying to Kubernetes..."
+    - kubectl apply -f $K8S_DEPLOYMENT_FILE
+  only:
+    - main
