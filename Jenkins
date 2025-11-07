@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "static-website"
+        IMAGE_TAG  = "latest"
+        REGISTRY   = "your-dockerhub-username"
+        KUBE_CONFIG = credentials('kubeconfig-cred-id') // Jenkins credential ID for kubeconfig
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -11,17 +18,30 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo 'Building Docker image...'
-                    bat 'docker build -t static-website:latest .'
+                    echo "Building Docker image..."
+                    bat "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
 
-        stage('Run Website in Docker') {
+        stage('Push to Docker Registry') {
             steps {
                 script {
-                    echo 'Running website on port 8085...'
-                    bat 'docker run -d -p 8086:8086 static-website:latest'
+                    echo "Pushing image to Docker Hub..."
+                    bat "docker login -u ${REGISTRY} -p ${DOCKERHUB_PASSWORD}"
+                    bat "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-cred-id', variable: 'KUBECONFIG')]) {
+                    script {
+                        echo "Deploying to Kubernetes..."
+                        bat "kubectl apply -f k8s/static-website-deployment.yaml"
+                        bat "kubectl apply -f k8s/static-website-service.yaml"
+                    }
                 }
             }
         }
