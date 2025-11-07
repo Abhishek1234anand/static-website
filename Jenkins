@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building Docker image...'
-                    sh 'docker build -t static-website:latest .'
+                    bat 'docker build -t static-website:latest .'
                 }
             }
         }
@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running website on port 8085...'
-                    sh 'docker run -d -p 8085:8085 static-website:latest'
+                    bat 'docker run -d -p 8085:8085 static-website:latest'
                 }
             }
         }
