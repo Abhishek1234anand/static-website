@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Expose port 8085 (same as Jenkins pipeline)
-EXPOSE 8085
+EXPOSE 8086
 
 # Default command to start Python HTTP server
-CMD ["python", "-m", "http.server", "8085"]
+CMD ["python", "-m", "http.server", "8086"]
