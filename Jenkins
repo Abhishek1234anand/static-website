@@ -24,7 +24,11 @@ pipeline {
             steps {
                 script {
                     echo '🛠️ Building Docker image...'
-                    bat "docker build -t %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG% ."
+                    bat '''
+                    echo Building Docker image...
+                    docker build -t %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG% .
+                    IF %ERRORLEVEL% NEQ 0 exit /b 1
+                    '''
                 }
             }
         }
@@ -37,7 +41,13 @@ pipeline {
                         bat '''
                         echo Logging in to Docker Hub...
                         docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%
+                        IF %ERRORLEVEL% NEQ 0 exit /b 1
+
+                        echo Pushing Docker image...
                         docker push %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%
+                        IF %ERRORLEVEL% NEQ 0 exit /b 1
+
+                        docker logout
                         '''
                     }
                 }
@@ -49,8 +59,15 @@ pipeline {
                 withCredentials([file(credentialsId: 'kubeconfig-cred-id', variable: 'KUBECONFIG')]) {
                     script {
                         echo '🚀 Deploying to Kubernetes...'
-                        bat 'kubectl apply -f k8s/deployment.yaml'
-                        bat 'kubectl apply -f k8s/service.yaml'
+                        bat '''
+                        echo Applying Kubernetes deployment...
+                        kubectl apply -f k8s/deployment.yaml
+                        IF %ERRORLEVEL% NEQ 0 exit /b 1
+
+                        echo Applying Kubernetes service...
+                        kubectl apply -f k8s/service.yaml
+                        IF %ERRORLEVEL% NEQ 0 exit /b 1
+                        '''
                     }
                 }
             }
