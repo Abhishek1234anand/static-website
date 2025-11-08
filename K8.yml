@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: static-website
-        image: static-website:latest
+        image: static-website:01
         ports:
         - containerPort: 8086
         readinessProbe:
