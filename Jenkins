@@ -61,11 +61,11 @@ pipeline {
                         echo '🚀 Deploying to Kubernetes...'
                         bat '''
                         echo Applying Kubernetes deployment...
-                        kubectl apply -f k8s/deployment.yaml
+                        kubectl apply -f k8/deployment.yaml
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
 
                         echo Applying Kubernetes service...
-                        kubectl apply -f k8s/service.yaml
+                        kubectl apply -f k8/service.yaml
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
                         '''
                     }
