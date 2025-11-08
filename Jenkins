@@ -23,7 +23,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo 'Building Docker image...'
+                    echo '🛠️ Building Docker image...'
                     bat "docker build -t %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG% ."
                 }
             }
@@ -33,9 +33,12 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jenkins-pipeline-token', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                     script {
-                        echo 'Pushing image to Docker Hub...'
-                        bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
-                        bat "docker push %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
+                        echo '📦 Logging in and pushing image to Docker Hub...'
+                        bat '''
+                        echo Logging in to Docker Hub...
+                        docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%
+                        docker push %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%
+                        '''
                     }
                 }
             }
@@ -45,7 +48,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-cred-id', variable: 'KUBECONFIG')]) {
                     script {
-                        echo 'Deploying to Kubernetes...'
+                        echo '🚀 Deploying to Kubernetes...'
                         bat 'kubectl apply -f k8s/deployment.yaml'
                         bat 'kubectl apply -f k8s/service.yaml'
                     }
