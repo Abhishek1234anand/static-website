@@ -3,15 +3,20 @@ pipeline {
 
     environment {
         IMAGE_NAME = "static-website"
-        IMAGE_TAG  = "latest"
-        REGISTRY   = "abhishek0000111" // Replace with your Docker Hub username
-        KUBE_CONFIG = credentials('kubeconfig-cred-id') // Jenkins credential ID for kubeconfig
+        IMAGE_TAG  = "01"
+        REGISTRY   = "abhishek0000111"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Abhishek1234anand/static-website.git'
+                checkout([$class: 'GitSCM',
+                  branches: [[name: '*/main']],
+                  userRemoteConfigs: [[
+                    url: 'https://github.com/Abhishek1234anand/static-website.git',
+                    credentialsId: 'github-cred-id'
+                  ]]
+                ])
             }
         }
 
@@ -19,17 +24,19 @@ pipeline {
             steps {
                 script {
                     echo 'Building Docker image...'
-                    bat "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                    bat "docker build -t %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG% ."
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    echo 'Pushing image to Docker Hub...'
-                    bat "docker login -u ${REGISTRY} -p ${DOCKERHUB_PASSWORD}"
-                    bat "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred-id', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                    script {
+                        echo 'Pushing image to Docker Hub...'
+                        bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
+                        bat "docker push %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
+                    }
                 }
             }
         }
@@ -44,6 +51,15 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs for details.'
         }
     }
 }
