@@ -11,11 +11,11 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 checkout([$class: 'GitSCM',
-                  branches: [[name: '*/main']],
-                  userRemoteConfigs: [[
-                    url: 'https://github.com/Abhishek1234anand/static-website.git',
-                    credentialsId: 'github-cred-id'
-                  ]]
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Abhishek1234anand/static-website.git',
+                        credentialsId: 'github-cred-id'
+                    ]]
                 ])
             }
         }
@@ -60,11 +60,10 @@ pipeline {
                     script {
                         echo '🚀 Deploying to Kubernetes...'
                         bat '''
-                        echo Applying Kubernetes deployment...
-                        kubectl apply -f k8.yml
-                        IF %ERRORLEVEL% NEQ 0 exit /b 1
+                        echo Setting KUBECONFIG...
+                        set KUBECONFIG=%KUBECONFIG%
 
-                        echo Applying Kubernetes service...
+                        echo Applying Kubernetes deployment...
                         kubectl apply -f k8.yml
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
                         '''
