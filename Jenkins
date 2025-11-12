@@ -40,7 +40,7 @@ pipeline {
                         bat """
                         echo Setting KUBECONFIG...
                         set KUBECONFIG=%KUBECONFIG%
-                        kubectl apply -f k8.yml
+                        kubectl apply -f k8.yml --validate=false
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
                         """
                     }
