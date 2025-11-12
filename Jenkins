@@ -10,7 +10,8 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                checkout([$class: 'GitSCM',
+                checkout([
+                    $class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/Abhishek1234anand/static-website.git',
@@ -23,12 +24,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo '🛠️ Building Docker image...'
-                    bat '''
+                    bat """
                     echo Building Docker image...
                     docker build -t %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG% .
                     IF %ERRORLEVEL% NEQ 0 exit /b 1
-                    '''
+                    """
                 }
             }
         }
@@ -37,18 +37,13 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jenkins-pipeline-token', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                     script {
-                        echo '📦 Logging in and pushing image to Docker Hub...'
-                        bat '''
-                        echo Logging in to Docker Hub...
+                        bat """
                         docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
-
-                        echo Pushing Docker image...
                         docker push %REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
-
                         docker logout
-                        '''
+                        """
                     }
                 }
             }
@@ -58,27 +53,15 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-cred-id', variable: 'KUBECONFIG')]) {
                     script {
-                        echo '🚀 Deploying to Kubernetes...'
-                        bat '''
+                        bat """
                         echo Setting KUBECONFIG...
                         set KUBECONFIG=%KUBECONFIG%
-
-                        echo Applying Kubernetes deployment...
                         kubectl apply -f k8.yml
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
-                        '''
+                        """
                     }
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Pipeline completed successfully!'
-        }
-        failure {
-            echo '❌ Pipeline failed. Check logs for details.'
         }
     }
 }
