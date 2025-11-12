@@ -25,7 +25,10 @@ pipeline {
             steps {
                 script {
                     bat """
+                    REM Configure Docker to use Minikube's Docker daemon
                     FOR /F "tokens=*" %%i IN ('minikube docker-env --shell cmd ^| findstr /V "REM"') DO %%i
+
+                    REM Build Docker image inside Minikube
                     docker build -t %FULL_IMAGE% .
                     IF %ERRORLEVEL% NEQ 0 exit /b 1
                     """
@@ -35,11 +38,13 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-cred-id', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                         bat """
-                        echo Setting KUBECONFIG...
+                        REM Set kubeconfig for kubectl
                         set KUBECONFIG=%KUBECONFIG%
+
+                        REM Apply Kubernetes manifest
                         kubectl apply -f k8.yml --validate=false
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
                         """
@@ -51,10 +56,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment successful!'
+            echo '✅ Deployment to Minikube successful!'
         }
         failure {
-            echo '❌ Deployment failed. Check logs for details.'
+            echo '❌ Deployment failed. Please check the logs and kubeconfig.'
         }
     }
 }
