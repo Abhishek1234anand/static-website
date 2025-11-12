@@ -21,14 +21,21 @@ pipeline {
             }
         }
 
+        stage('Configure Minikube Docker') {
+            steps {
+                script {
+                    bat """
+                    REM Point Docker CLI to Minikube's Docker daemon
+                    FOR /F "tokens=*" %%i IN ('minikube docker-env --shell cmd ^| findstr /V "REM"') DO %%i
+                    """
+                }
+            }
+        }
+
         stage('Build Docker Image in Minikube') {
             steps {
                 script {
                     bat """
-                    REM Configure Docker to use Minikube's Docker daemon
-                    FOR /F "tokens=*" %%i IN ('minikube docker-env --shell cmd ^| findstr /V "REM"') DO %%i
-
-                    REM Build Docker image inside Minikube
                     docker build -t %FULL_IMAGE% .
                     IF %ERRORLEVEL% NEQ 0 exit /b 1
                     """
@@ -41,10 +48,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                         bat """
-                        REM Set kubeconfig for kubectl
+                        echo Setting KUBECONFIG...
                         set KUBECONFIG=%KUBECONFIG%
-
-                        REM Apply Kubernetes manifest
                         kubectl apply -f k8.yml --validate=false
                         IF %ERRORLEVEL% NEQ 0 exit /b 1
                         """
