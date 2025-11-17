@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: static-website
-        image: static-website:01  # ✅ Use this if built inside Minikube
+        image: abhishek0000111/static-website:01
         ports:
         - containerPort: 8086
         readinessProbe:
