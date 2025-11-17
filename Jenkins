@@ -2,58 +2,35 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "static-website"
-        IMAGE_TAG  = "01"
-        FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
+        IMAGE_NAME = ""
+        IMAGE_TAG = "01"
+        KUBE_DEPLOY_YAML = "K8.yml"
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/Abhishek1234anand/static-website.git',
-                        credentialsId: 'github-cred-id'
-                    ]]
-                ])
-            }
-        }
-
-        stage('Configure Minikube Docker') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    bat """
-                    REM Point Docker CLI to Minikube's Docker daemon
-                    FOR /F "tokens=*" %%i IN ('minikube docker-env --shell cmd ^| findstr /V "REM"') DO %%i
-                    """
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
 
-        stage('Build Docker Image in Minikube') {
+        stage('Push to Local Registry or Docker Hub') {
             steps {
                 script {
-                    bat """
-                    docker build -t %FULL_IMAGE% .
-                    IF %ERRORLEVEL% NEQ 0 exit /b 1
-                    """
+                    // Replace with your registry if needed
+                    // sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} abhishek0000111/${IMAGE_NAME}:${IMAGE_TAG}"
+                    // sh "docker push your-registry/${IMAGE_NAME}:${IMAGE_TAG}"
+                    echo "Skipping push for local testing"
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
-                    script {
-                        bat """
-                        echo Setting KUBECONFIG...
-                        set KUBECONFIG=%KUBECONFIG%
-                        kubectl apply -f k8.yml --validate=false
-                        IF %ERRORLEVEL% NEQ 0 exit /b 1
-                        """
-                    }
+                script {
+                    sh "kubectl apply -f ${KUBE_DEPLOY_YAML}"
                 }
             }
         }
@@ -61,10 +38,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment to Minikube successful!'
+            echo "✅ Deployment successful!"
         }
         failure {
-            echo '❌ Deployment failed. Please check the logs and kubeconfig.'
+            echo "❌ Deployment failed!"
         }
     }
 }
