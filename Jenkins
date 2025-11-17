@@ -11,32 +11,26 @@ pipeline {
     stages {
         stage('Clone GitHub Repo') {
             steps {
-                git url: 'https://github.com/Abhishek1234anand/static-website.git'
+                git branch: 'main', url: 'https://github.com/Abhishek1234anand/static-website.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ."
-                }
+                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ."
             }
         }
 
         stage('Tag and Push Docker Image') {
             steps {
-                script {
-                    bat "docker tag %IMAGE_NAME%:%IMAGE_TAG% %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
-                    bat "docker push %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
-                }
+                bat "docker tag %IMAGE_NAME%:%IMAGE_TAG% %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
+                bat "docker push %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    bat "kubectl apply -f %KUBE_DEPLOY_YAML%"
-                }
+                bat "kubectl apply -f %KUBE_DEPLOY_YAML%"
             }
         }
     }
