@@ -38,7 +38,7 @@ pipeline {
 
         stage('Configure Kubeconfig') {
             steps {
-                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG_PATH')]) {
+                withCredentials([file(credentialsId: 'minikube-config', variable: 'KUBECONFIG_PATH')]) {
                     bat "set KUBECONFIG=%KUBECONFIG_PATH%"
                 }
             }
