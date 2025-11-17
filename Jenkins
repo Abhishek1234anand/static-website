@@ -15,6 +15,14 @@ pipeline {
             }
         }
 
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-pipeline-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ."
@@ -25,6 +33,14 @@ pipeline {
             steps {
                 bat "docker tag %IMAGE_NAME%:%IMAGE_TAG% %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
                 bat "docker push %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
+            }
+        }
+
+        stage('Configure Kubeconfig') {
+            steps {
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG_PATH')]) {
+                    bat "set KUBECONFIG=%KUBECONFIG_PATH%"
+                }
             }
         }
 
