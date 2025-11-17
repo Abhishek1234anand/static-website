@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = ""
+        IMAGE_NAME = "static-website"
         IMAGE_TAG = "01"
+        DOCKER_REGISTRY = "abhishek0000111"
         KUBE_DEPLOY_YAML = "K8.yml"
     }
 
@@ -11,18 +12,16 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                    bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ."
                 }
             }
         }
 
-        stage('Push to Local Registry or Docker Hub') {
+        stage('Tag and Push Docker Image') {
             steps {
                 script {
-                    // Replace with your registry if needed
-                    // sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} abhishek0000111/${IMAGE_NAME}:${IMAGE_TAG}"
-                    // sh "docker push your-registry/${IMAGE_NAME}:${IMAGE_TAG}"
-                    echo "Skipping push for local testing"
+                    bat "docker tag %IMAGE_NAME%:%IMAGE_TAG% %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
+                    bat "docker push %DOCKER_REGISTRY%/%IMAGE_NAME%:%IMAGE_TAG%"
                 }
             }
         }
@@ -30,7 +29,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh "kubectl apply -f ${KUBE_DEPLOY_YAML}"
+                    bat "kubectl apply -f %KUBE_DEPLOY_YAML%"
                 }
             }
         }
