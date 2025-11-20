@@ -43,6 +43,11 @@ pipeline {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_PATH')]) {
                     sh '''
                         export KUBECONFIG=$KUBECONFIG_PATH
+                        cd "$WORKSPACE"
+                        echo "📁 Current directory:"
+                        pwd
+                        echo "📄 Listing files:"
+                        ls -l
                         kubectl apply -f $KUBE_DEPLOY_YAML
                     '''
                 }
