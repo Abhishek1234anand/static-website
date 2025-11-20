@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "static-website"
         IMAGE_TAG = "01"
         DOCKER_REGISTRY = "abhishek0000111"
-        KUBE_DEPLOY_YAML = "K8.yml"
+        KUBE_DEPLOY_YAML = "k8.yml"
     }
 
     stages {
@@ -38,17 +38,14 @@ pipeline {
             }
         }
 
-        stage('Configure Kubeconfig') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_PATH')]) {
-                    sh 'export KUBECONFIG=$KUBECONFIG_PATH'
-                }
-            }
-        }
-
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f $KUBE_DEPLOY_YAML'
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_PATH')]) {
+                    sh '''
+                        export KUBECONFIG=$KUBECONFIG_PATH
+                        kubectl apply -f $KUBE_DEPLOY_YAML
+                    '''
+                }
             }
         }
     }
