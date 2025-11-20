@@ -40,7 +40,7 @@ pipeline {
 
         stage('Configure Kubeconfig') {
             steps {
-                withCredentials([file(credentialsId: 'minikube-config', variable: 'KUBECONFIG_PATH')]) {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_PATH')]) {
                     sh 'export KUBECONFIG=$KUBECONFIG_PATH'
                 }
             }
