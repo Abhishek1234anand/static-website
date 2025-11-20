@@ -42,9 +42,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_CONTENT')]) {
                     sh '''
-                        cat <<EOF > kubeconfig.yaml
-$KUBECONFIG_CONTENT
-EOF
+                        printf "%s\\n" "$KUBECONFIG_CONTENT" > kubeconfig.yaml
                         export KUBECONFIG=$(pwd)/kubeconfig.yaml
                         kubectl apply -f $KUBE_DEPLOY_YAML
                     '''
