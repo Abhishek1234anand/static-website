@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "static-website"
         IMAGE_TAG = "01"
         DOCKER_REGISTRY = "abhishek0000111"
-        KUBE_DEPLOY_YAML = "k8.yml"
+        KUBE_DEPLOY_YAML = "K8.yml"
     }
 
     stages {
