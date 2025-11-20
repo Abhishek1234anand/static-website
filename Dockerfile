@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy all project files from repo to container
 COPY . .
 
-# Expose port 8085 (same as Jenkins pipeline)
+# Expose port 8086
 EXPOSE 8086
 
 # Default command to start Python HTTP server
